@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nitram Cooperative BankBot Chat</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: 290px;
+      background-color: #f5f5f5;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+    .sidebar h2 {
+      margin-top: 0;
+    }
+    .sidebar .disclaimer {
+      font-size: 12px;
+      font-style: italic;
+      color: #666;
+      margin: 5px 0 15px 0;
+      line-height: 1.3;
+    }
+    .sidebar button {
+      background-color: #004aad;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .sidebar button:hover {
+      background-color: #00307d;
+    }
+    .history, .insights {
+      flex: 1;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-header {
+      background-color: #004aad;
+      color: white;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-box {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: #eef1f5;
+    }
+    .chat-input {
+      padding: 16px;
+      border-top: 1px solid #ccc;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+    }
+    .chat-input textarea {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      resize: none;
+      border: 1px solid #ccc;
+    }
+    .chat-input button {
+      background-color: #004aad;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .chat-input button:hover {
+      background-color: #00307d;
+    }
+    .message {
+      margin-bottom: 16px;
+    }
+    .message.user {
+      text-align: right;
+    }
+    .message.bot {
+      text-align: left;
+    }
+    .message-content {
+      display: inline-block;
+      padding: 10px;
+      border-radius: 10px;
+      max-width: 70%;
+    }
+    .user .message-content {
+      background-color: #d1e8ff;
+    }
+    .bot .message-content {
+      background-color: #fff;
+      border: 1px solid #ddd;
+    }
+    .bot .message-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 12px 16px;
+      max-width: 80%;
+      margin-bottom: 12px;
+    }
+    .message-card h3 {
+      margin-top: 0;
+      color: #004aad;
+      font-size: 16px;
+    }
+    .message-card p {
+      margin: 8px 0;
+    }
+    .message-card ul {
+      padding-left: 20px;
+    }
+    .message-card li {
+      margin-bottom: 6px;
+    }
+    .typing-indicator {
+      display: inline-flex;
+      padding: 10px 15px;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: #666;
+      border-radius: 50%;
+      margin: 0 3px;
+      animation: typingAnimation 1.4s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes typingAnimation {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-4px); }
+    }
+    .history-item {
+      padding: 8px;
+      border-bottom: 1px solid #ccc;
+      cursor: pointer;
+    }
+    .history-item:hover {
+      background-color: #e0e0e0;
+    }
+    .insight-item {
+      padding: 6px 0;
+      font-size: 14px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Nitram Cooperative Bank</h2>
+    <div class="disclaimer">For authorized bank officials and administrators only</div>
+    <button onclick="newChat()">New Chat</button>
+    <div class="history" id="history">
+      <h3>Searches</h3>
+    </div>
+    <div class="insights">
+      <h3>Insights</h3>
+      <div class="insight-item">💡 How to budget</div>
+      <div class="insight-item">📘 Understanding loan terms</div>
+      <div class="insight-item">🚫 Avoiding debt traps</div>
+      <div class="insight-item">💰 Gold Savings Plan explained</div>
+      <div class="insight-item">📊 Improve your credit score</div>
+    </div>
+  </div>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      <div id="chat-title">Admin BankBot</div>
+    </div>
+    <div class="chat-box" id="chat-box">
+      <!-- Messages will appear here -->
+    </div>
+    <div class="chat-input">
+      <button onclick="newChat()" style="align-self: flex-start;">New Chat</button>
+      <div class="chat-input-row">
+        <textarea id="chat-input" rows="1" placeholder="Type a message... 😊"></textarea>
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let chatHistory = [];
+    let currentChat = [];
+    let isBotTyping = false;
+
+    // Initialize with welcome message
+    window.onload = function() {
+      appendMessage("bot", "Hello! I'm your Nitram Bank assistant. How can I help you today?");
+      currentChat.push({ sender: "bot", text: "Hello! I'm your Nitram Bank assistant. How can I help you today?" });
+    };
+
+    function newChat() {
+      if (currentChat.length > 0) {
+        if (chatHistory.length >= 10) chatHistory.shift();
+        chatHistory.push([...currentChat]);
+        updateHistory();
+      }
+      currentChat = [];
+      document.getElementById("chat-box").innerHTML = "";
+      document.getElementById("chat-title").textContent = "New Chat";
+      appendMessage("bot", "Hello! I'm your Nitram Bank assistant. How can I help you today?");
+      currentChat.push({ sender: "bot", text: "Hello! I'm your Nitram Bank assistant. How can I help you today?" });
+    }
+
+    function updateHistory() {
+      const historyDiv = document.getElementById("history");
+      const chats = historyDiv.querySelectorAll(".history-item");
+      chats.forEach((c) => c.remove());
+      chatHistory.forEach((chat, index) => {
+        const el = document.createElement("div");
+        el.className = "history-item";
+        el.textContent = chat[0]?.text || `Chat ${index + 1}`;
+        el.onclick = () => loadChat(index);
+        historyDiv.appendChild(el);
+      });
+    }
+
+    function loadChat(index) {
+      const chat = chatHistory[index];
+      const chatBox = document.getElementById("chat-box");
+      chatBox.innerHTML = "";
+      chat.forEach((msg) => {
+        appendMessage(msg.sender, msg.text);
+      });
+      document.getElementById("chat-title").textContent = chat[0]?.text || "History Chat";
+    }
+
+    function sendMessage() {
+      if (isBotTyping) return;
+      
+      const input = document.getElementById("chat-input");
+      const text = input.value.trim();
+      if (!text) return;
+
+      if (currentChat.length === 0) {
+        document.getElementById("chat-title").textContent = text.length > 30 ? `${text.substring(0, 30)}...` : text;
+      }
+
+      appendMessage("user", text);
+      currentChat.push({ sender: "user", text });
+      input.value = "";
+
+      showTypingIndicator();
+      getBotResponse(text);
+    }
+
+    function showTypingIndicator() {
+      isBotTyping = true;
+      const typingDiv = document.createElement("div");
+      typingDiv.className = "message bot";
+      typingDiv.innerHTML = `
+        <div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      `;
+      document.getElementById("chat-box").appendChild(typingDiv);
+      document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+      return typingDiv;
+    }
+
+    function removeTypingIndicator() {
+      const chatBox = document.getElementById("chat-box");
+      const typingIndicators = chatBox.querySelectorAll('.typing-indicator');
+      typingIndicators.forEach(indicator => {
+        indicator.parentElement.remove();
+      });
+      isBotTyping = false;
+    }
+
+    async function getBotResponse(input) {
+      const apiUrl = "http://127.0.0.1:5000/ask"; // Using 127.0.0.1 instead of localhost
+      const typingDiv = showTypingIndicator();
+      
+      try {
+        console.log("[DEBUG] Sending query:", input);
+        
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          mode: "cors",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({ query: input })
+        });
+
+        console.log("[DEBUG] Response status:", response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("[ERROR] Server response:", errorText);
+          throw new Error(`Server responded with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("[DEBUG] Received data:", data);
+        
+        removeTypingIndicator();
+        
+        if (data && data.response) {
+          await streamResponse(data.response);
+          currentChat.push({ sender: "bot", text: data.response });
+        } else {
+          throw new Error("Invalid response format from server");
+        }
+        
+      } catch (error) {
+        console.error("[ERROR] Full error:", error);
+        removeTypingIndicator();
+        
+        let errorMsg = "Could not connect to the server. Please:";
+        errorMsg += "\n1. Ensure backend is running";
+        errorMsg += "\n2. Check browser console for details";
+        errorMsg += "\n3. Try refreshing the page";
+        
+        appendMessage("bot", errorMsg);
+      }
+    }
+
+    async function streamResponse(text) {
+      let messageContent;
+      try {
+        const data = JSON.parse(text);
+        if (Array.isArray(data)) {
+          messageContent = formatAsCard(data);
+        } else {
+          messageContent = text;
+        }
+      } catch {
+        messageContent = text;
+      }
+
+      const div = document.createElement("div");
+      div.className = "message bot";
+      const content = document.createElement("div");
+      content.className = typeof messageContent === 'string' ? "message-content" : "message-card";
+      div.appendChild(content);
+      document.getElementById("chat-box").appendChild(div);
+
+      const words = typeof messageContent === 'string' 
+        ? messageContent.split(' ') 
+        : [messageContent];
+      
+      for (let i = 0; i < words.length; i++) {
+        if (typeof words[i] === 'string') {
+          content.textContent += (i > 0 ? ' ' : '') + words[i];
+        } else {
+          content.innerHTML = words[i];
+        }
+        await new Promise(resolve => setTimeout(resolve, 50));
+        document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+      }
+    }
+
+    function formatAsCard(data) {
+      if (data.length === 0) return "<p>No data found</p>";
+      
+      let html = '';
+      if ('balance' in data[0]) {
+        html = `<h3>Account Balances</h3><ul>`;
+        data.forEach(item => {
+          html += `<li><strong>${item.account}:</strong> ${item.balance}</li>`;
+        });
+        html += `</ul>`;
+      } else if ('amount' in data[0]) {
+        html = `<h3>Recent Transactions</h3><ul>`;
+        data.forEach(item => {
+          html += `<li>${item.date}: ${item.description} <strong>${item.amount}</strong></li>`;
+        });
+        html += `</ul>`;
+      } else {
+        html = `<h3>Information</h3><p>${JSON.stringify(data)}</p>`;
+      }
+      return html;
+    }
+
+    function appendMessage(sender, text) {
+      const div = document.createElement("div");
+      div.className = `message ${sender}`;
+      
+      try {
+        const data = JSON.parse(text);
+        if (Array.isArray(data)) {
+          const card = document.createElement("div");
+          card.className = "message-card";
+          card.innerHTML = formatAsCard(data);
+          div.appendChild(card);
+        } else {
+          const content = document.createElement("div");
+          content.className = "message-content";
+          content.textContent = text;
+          div.appendChild(content);
+        }
+      } catch {
+        const content = document.createElement("div");
+        content.className = "message-content";
+        content.textContent = text;
+        div.appendChild(content);
+      }
+      
+      const chatBox = document.getElementById("chat-box");
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    document.getElementById('chat-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
