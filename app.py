@@ -24,12 +24,11 @@ try:
     bot = FinanceBot()
     logger.info("FinanceBot initialized successfully")
     
-    # Add connection test INSIDE the try block
-    test_response = bot.ask("SELECT 1 AS connection_test")
-    if "connection_test" not in str(test_response):
+    # Use the new test_connection() method here
+    if not bot.test_connection():
         raise RuntimeError("Database test query failed")
     logger.info("✅ FinanceBot connection verified")
-    
+
 except Exception as e:
     logger.error(f"Failed to initialize FinanceBot: {str(e)}")
     raise
