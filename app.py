@@ -6,18 +6,12 @@ import os
 
 # Initialize Flask app with template folder
 app = Flask(__name__, template_folder='templates')
-CORS(app, resources={
-    r"/ask": {
-        "origins": [
-            "http://localhost:*",
-            "http://127.0.0.1:*",
-            "https://nitram-db-finance-bot-llm-1.onrender.com"  
-        ],
-        "methods": ["POST", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": True
-    }
-})
+
+CORS(app, origins=[
+    "http://localhost:*",
+    "http://127.0.0.1:*",
+    "https://nitram-db-finance-bot-llm-1.onrender.com"
+], supports_credentials=True)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
