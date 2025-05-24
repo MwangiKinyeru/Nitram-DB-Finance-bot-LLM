@@ -8,7 +8,11 @@ import os
 app = Flask(__name__, template_folder='templates')
 CORS(app, resources={
     r"/ask": {
-        "origins": ["http://localhost:*", "http://127.0.0.1:*"],
+        "origins": [
+            "http://localhost:*",
+            "http://127.0.0.1:*",
+            "https://nitram-db-finance-bot-llm-1.onrender.com"  
+        ],
         "methods": ["POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True

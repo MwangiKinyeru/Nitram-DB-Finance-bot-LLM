@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class FinanceBot:
     def __init__(self):
-        # Parse DATABASE_URL
+        # connect DATABASE_URL
         db_url = os.getenv("DATABASE_URL")
         parsed = urlparse(db_url)
 
@@ -30,7 +30,7 @@ class FinanceBot:
             password=parsed.password,
             host=parsed.hostname,
             port=parsed.port,
-            database=parsed.path[1:]  # skip leading slash
+            database=parsed.path[1:]  
         )
 
         self.schema = self._load_schema()
