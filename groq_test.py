@@ -5,6 +5,7 @@ import logging
 import requests
 import psycopg2
 from psycopg2 import pool
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 from datetime import datetime, date
 from decimal import Decimal
@@ -18,15 +19,20 @@ logger = logging.getLogger(__name__)
 
 class FinanceBot:
     def __init__(self):
+        # Parse DATABASE_URL
+        db_url = os.getenv("DATABASE_URL")
+        parsed = urlparse(db_url)
+
         self.db_pool = psycopg2.pool.SimpleConnectionPool(
             minconn=1,
             maxconn=10,
-            host=os.getenv("DB_HOST"),
-            database=os.getenv("DB_NAME"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            port=os.getenv("DB_PORT")
+            user=parsed.username,
+            password=parsed.password,
+            host=parsed.hostname,
+            port=parsed.port,
+            database=parsed.path[1:]  # skip leading slash
         )
+
         self.schema = self._load_schema()
         self.context = {
             'current_account': None,
@@ -161,7 +167,6 @@ class FinanceBot:
                             in a professional setting—whether summarizing data for internal review or preparing information to relay 
                             to a customer. Focus on key figures, avoid unnecessary filler, and vary your phrasing naturally based on 
                             the query type.
-
                         """},
                         {"role": "user", "content": f"""
                             User asked: \"{user_query}\"
