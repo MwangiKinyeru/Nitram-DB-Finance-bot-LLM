@@ -305,13 +305,13 @@
     }
 
     async function getBotResponse(input) {
-      const apiUrl = "http://127.0.0.1:5000/ask"; 
+      const apiUrl = "https://nitram-db-finance-bot-llm-1.onrender.com/ask"; 
       const typingDiv = showTypingIndicator();
       
       try {
         console.log("[DEBUG] Sending query:", input);
         
-        const response = await fetch("https://nitram-api-server-name.onrender.com/ask", {
+        const response = await fetch(apiUrl, {
           method: "POST",
           mode: "cors",
           credentials: "include",
